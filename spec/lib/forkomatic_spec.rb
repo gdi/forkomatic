@@ -2,14 +2,14 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Forkomatic do
   before do
-    @forkomatic = Forkomatic.new({:max_children => 5, :wait_for_children => false})
+    @forkomatic = Forkomatic.new({:max_children => 5, :wait_for_children => false, :max_iterations => 1})
   end
 
   describe '.new' do
     it "should create a forkomatic from the params" do
       @forkomatic.should be_a_kind_of(Forkomatic)
     end
-    it "should set default values" do
+    it "should set max_iterations to 1" do
       @forkomatic.max_iterations.should == 1
     end
     it "should create a forkomatic intialized with an integer" do
@@ -33,19 +33,19 @@ describe Forkomatic do
       @forkomatic.build_jobs[0].should be_a_kind_of(Forkomatic::Job)
     end
     it "should reduce available when work is being done" do
-      @test = Forkomatic.new({:max_children => 5, :wait_for_children => false})
+      @test = Forkomatic.new({:max_children => 5, :wait_for_children => false, :max_iterations => 1})
       @test.build_jobs
       @test.run
       @test.available.should == 0
     end
     it "should not create more than the max jobs" do
-      @test = Forkomatic.new({:max_children => 1, :wait_for_children => false})
+      @test = Forkomatic.new({:max_children => 1, :wait_for_children => false, :max_iterations => 1})
       @test.build_jobs
       @test.run
       @test.build_jobs.length.should == 0
     end
     it "should show max_children available if wait_for_children after doing work" do
-      @test = Forkomatic.new({:max_children => 1, :wait_for_children => true})
+      @test = Forkomatic.new({:max_children => 1, :wait_for_children => true, :max_iterations => 1})
       @test.build_jobs
       @test.run
       @test.build_jobs.length.should == 1

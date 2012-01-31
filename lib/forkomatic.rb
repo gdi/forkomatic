@@ -39,7 +39,7 @@ class Forkomatic
     self.jobs = []
     self.max_children = params[:max_children] || 1
     self.work_interval = params[:work_interval].nil? || params[:work_interval] < 0 ? 0 : params[:work_interval]
-    self.max_iterations = params[:max_iterations] || 1
+    self.max_iterations = params[:max_iterations]
     self.wait_for_children = params[:wait_for_children].nil? ? true : params[:wait_for_children]
   end
 
@@ -70,7 +70,7 @@ class Forkomatic
   # Do work.
   def run
     iteration = 0
-    while iteration < @max_iterations do
+    while (@max_iterations.nil? || iteration < @max_iterations) do
       iteration += 1
       available = self.available
 
