@@ -11,7 +11,6 @@ class Forkomatic
     end
   end
 
-  attr_accessor :child_pids
   attr_accessor :max_children
   attr_accessor :work_interval
   attr_accessor :max_iterations
@@ -26,6 +25,7 @@ class Forkomatic
       params = load_config(args)
     elsif args.is_a?(Integer)
       # Given an integer, forkomatic will only run N runners 1 time.
+      params[:wait_for_children] = true
       params[:max_children] = args
       params[:work_interval] = 0
       params[:max_iterations] = 1
@@ -35,7 +35,7 @@ class Forkomatic
     end
     t = params
     params.inject({}) {|t, (key, val)| t[key.to_sym] = val; t}
-    self.child_pids = []
+    self.jobs = []
     self.max_children = params[:max_children] || 1
     self.work_interval = params[:work_interval].nil? || params[:work_interval] < 0 ? 0 : params[:work_interval]
     self.max_iterations = params[:max_iterations]
@@ -140,8 +140,10 @@ class Forkomatic
   end
 
   # Get a list of current process IDs.
-  def get_pids
-    
-    @child_pids
+  def child_pids
+    reap_all
+    pids = []
+    @jobs.each {|job| pids.push(job.pid) if job.pid}
+    pids
   end
 end
