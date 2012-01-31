@@ -11,7 +11,6 @@ class Forkomatic
     end
   end
 
-
   attr_accessor :child_pids
   attr_accessor :max_children
   attr_accessor :work_interval
@@ -36,7 +35,7 @@ class Forkomatic
     end
     t = params
     params.inject({}) {|t, (key, val)| t[key.to_sym] = val; t}
-    self.jobs = []
+    self.child_pids = []
     self.max_children = params[:max_children] || 1
     self.work_interval = params[:work_interval].nil? || params[:work_interval] < 0 ? 0 : params[:work_interval]
     self.max_iterations = params[:max_iterations]
@@ -67,15 +66,27 @@ class Forkomatic
     params
   end
 
+  # Kill all child processes and shutdown.
+  def shutdown
+    child_pids.each do |pid|
+      begin
+        Process.kill("TERM", pid)
+      rescue => e
+        puts e.to_s
+      end
+    end
+    exit
+  end
+
   # Do work.
   def run
+    Signal.trap("INT")  { shutdown }
     iteration = 0
     while (@max_iterations.nil? || iteration < @max_iterations) do
       iteration += 1
-      available = self.available
-
-      @jobs = build_jobs
+      build_jobs
       @jobs.each do |job|
+        next if job.pid
         pid = Process.fork do
           job.work!
         end
@@ -88,33 +99,49 @@ class Forkomatic
 
   # Create workers.
   def build_jobs
-    count = self.available
-    (1..count).collect {|i| Forkomatic::Job.new}
+    available.each {|id| @jobs[id] = Forkomatic::Job.new}
   end
 
-  # Perform work in a parallel fashion.
-  def available
-    # Reap children runners without waiting.
-    finished = []
-    @jobs.each do |job|
-      if job.pid
-        begin
-          finished.push(job.pid) if Process.waitpid(job.pid, Process::WNOHANG)
-        rescue Errno::ECHILD
-          finished.push(job.pid)
-        rescue
+  # Reap child processes that finished.
+  def reap(pid)
+    return true if pid.nil?
+    begin
+      return true if Process.waitpid(pid, Process::WNOHANG)
+    rescue Errno::ECHILD
+      return true
+    rescue => e
+      puts "ERROR: #{e.to_s}"
+    end
+    return false
+  end
 
-        end
+  # Try to reap all child processes.
+  def reap_all
+    @jobs.each do |job|
+      if reap(job.pid)
+        job.pid = nil
       end
     end
-    @jobs.delete_if {|job| finished.include?(job.pid) }
-    @max_children - @jobs.length
+  end
+
+  # See how many children are available.
+  def available
+    # Initialize if need be.
+    @jobs = (1..@max_children).collect {|i| Forkomatic::Job.new} if @jobs.nil? || @jobs.empty?
+    # Reap children runners without waiting.
+    reap_all
+    need_work = []
+    i = 0
+    @jobs.each do |job|
+      need_work.push(i) if reap(job.pid)
+      i += 1
+    end
+    need_work
   end
 
   # Get a list of current process IDs.
-  def pids
-    pids = []
-    @jobs.each {|job| pids.push(job.pid) if job.pid}
-    pids
+  def get_pids
+    
+    @child_pids
   end
 end
