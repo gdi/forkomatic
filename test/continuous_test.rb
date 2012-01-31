@@ -14,21 +14,17 @@ class Tester < Forkomatic
     # Overload the work! function.
     def work!
       puts @data
-      sleep rand(4)
+      sleep rand(5)
     end
   end
 
-  attr_accessor :data
   # Overload the build_jobs function to give each job useful work and data to work with.
-  def build_jobs
-    @data ||= 0
-    puts "Current runners  : #{child_pids.length}"
-    puts "New to be created: #{available.length}"
-    available.each {|id| @data += 1; @jobs[id] = Tester::Job.new(@data)}
+  def build_jobs(count)
+    (1..count).each.collect { Tester::Job.new(rand(20)) }
   end
 end
 
 # Create a new forkomatic instance with 3 child workers.
-f = Tester.new({:max_children => 10, :work_interval => 1, :wait_for_children => false})
+f = Tester.new({:max_children => 10, :work_interval => 0, :wait_for_children => false})
 # Do the work
 f.run

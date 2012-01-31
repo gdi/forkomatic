@@ -13,15 +13,15 @@ describe Forkomatic do
       @forkomatic.max_iterations.should == 1
     end
     it "should create a forkomatic intialized with an integer" do
-      @forkomatic.available.length.should == 5
+      @forkomatic.available.should == 5
     end
     it "should create a forkomatic initialized with a hash" do
       @test = Forkomatic.new({'max_runners' => 1})
-      @test.available.length.should == 1
+      @test.available.should == 1
     end
     it "should create a forkomatic initalized with a file path to a configuration" do
       @test = Forkomatic.new(File.dirname(__FILE__) + '/../fixtures/config.txt')
-      @test.available.length.should == 2
+      @test.available.should == 2
     end
     it "should not wait for children if :wait_for_children is false" do
       @forkomatic.wait_for_children.should == false

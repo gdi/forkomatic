@@ -18,11 +18,10 @@ class Tester < Forkomatic
   end
 
   # Overload the build_jobs function to give each job useful work and data to work with.
-  def build_jobs
-    data = (1..100).collect {|i| i}
+  def build_jobs(count)
+    data = (1..100).each.collect
     i = 0
-    count = available.length
-    available.each {|id| i += 1; @jobs[id] = Tester::Job.new(data, i * (20 / count), (i + 1) * (20 / count) - 1)}
+    (1..count).each.collect { i += 1; Tester::Job.new(data, i * (20 / count), (i + 1) * (20 / count) - 1)}
   end
 end
 

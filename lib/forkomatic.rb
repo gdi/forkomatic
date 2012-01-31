@@ -84,13 +84,13 @@ class Forkomatic
     iteration = 0
     while (@max_iterations.nil? || iteration < @max_iterations) do
       iteration += 1
-      build_jobs
-      @jobs.each do |job|
-        next if job.pid
+      current_jobs = build_jobs(available)
+      current_jobs.each do |job|
         pid = Process.fork do
           job.work!
         end
         job.pid = pid
+        @jobs.push(job)
       end
       sleep @work_interval if @work_interval > 0
     end
@@ -98,8 +98,8 @@ class Forkomatic
   end
 
   # Create workers.
-  def build_jobs
-    available.each {|id| @jobs[id] = Forkomatic::Job.new}
+  def build_jobs(count)
+    (1..count).each.collect {Forkomatic::Job.new}
   end
 
   # Reap child processes that finished.
@@ -117,26 +117,22 @@ class Forkomatic
 
   # Try to reap all child processes.
   def reap_all
+    finished = []
     @jobs.each do |job|
       if reap(job.pid)
-        job.pid = nil
+        finished.push(job.pid)
       end
     end
+    @jobs.delete_if {|job| finished.include?(job.pid)}
   end
 
   # See how many children are available.
   def available
     # Initialize if need be.
-    @jobs = (1..@max_children).collect {|i| Forkomatic::Job.new} if @jobs.nil? || @jobs.empty?
+    return @max_children if @jobs.nil? || @jobs.empty?
     # Reap children runners without waiting.
     reap_all
-    need_work = []
-    i = 0
-    @jobs.each do |job|
-      need_work.push(i) if reap(job.pid)
-      i += 1
-    end
-    need_work
+    @max_children - @jobs.length
   end
 
   # Get a list of current process IDs.
