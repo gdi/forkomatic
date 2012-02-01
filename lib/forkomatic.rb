@@ -67,7 +67,7 @@ class Forkomatic
   end
 
   # Kill all child processes and shutdown.
-  def shutdown
+  def shutdown(all)
     child_pids.each do |pid|
       begin
         Process.kill("TERM", pid)
@@ -75,12 +75,12 @@ class Forkomatic
         puts e.to_s
       end
     end
-    exit
+    exit if all
   end
 
   # Do work.
   def run
-    Signal.trap("INT")  { shutdown }
+    Signal.trap("INT")  { shutdown(true) }
     iteration = 0
     while (@max_iterations.nil? || iteration < @max_iterations) do
       iteration += 1
