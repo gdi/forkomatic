@@ -9,7 +9,7 @@
 
 == Synopsis
   class YourForkomaticClass < Forkomatic
-    class YourForkomaticClass::Job < Forkomatic::Job
+    class Job < Forkomatic::Job
       attr_accessor :data
   
       def initialize(data)
@@ -36,9 +36,9 @@
   # The work function will run continuously, adding new child processes as old ones die to maintain a constant 10 processes.
   Forkomatic.new({:max_children => 10, :work_interval => 1})
 
-* Override the Forkomatic::Job initialize function to give your child processes data to work with.
-* Override the Forkomatic::Job work! function to do whatever processing is required.
-* Override the build_jobs() function to create 'count' child processes as needed.
+* Override the Job initialize function to give your child processes data to work with.
+* Override the Job work! function to do whatever processing is required.
+* Override the Forkomatic build_jobs() function to create 'count' child processes as needed.
 * Create a new instance of your Forkomatic class by giving it a number of processes to create or manually specifying parameters.
 
 == Examples
@@ -53,6 +53,13 @@
 * Commit and push until you are happy with your contribution
 * Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
 * Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
+
+== Related projects
+forkify: https://github.com/dakrone/forkify
+* based on forkoff and threadify, used to processes a bunch of data using 'n' processes.  Limited to one iteration, but very simple to use.
+
+forkoff: https://github.com/ahoward/forkoff
+* works on enumerable objects, iterating a code block to run in each child processes and collecting results.  Also limited to a single iteration.
 
 == Copyright
 
