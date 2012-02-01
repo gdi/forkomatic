@@ -8,33 +8,33 @@
 * forkomatic can also maintain a set number of processes for any number of iterations, adding new processes as child processes finish.
 
 == Synopsis
-class YourForkomaticClass < Forkomatic
-  class YourForkomaticClass::Job < Forkomatic::Job
-    attr_accessor :data
-
-    def initialize(data)
-      self.data = data
+  class YourForkomaticClass < Forkomatic
+    class YourForkomaticClass::Job < Forkomatic::Job
+      attr_accessor :data
+  
+      def initialize(data)
+        self.data = data
+      end
+  
+      def work!
+        puts "Working on #{data}"
+        sleep 1
+      end
     end
-
-    def work!
-      puts "Working on #{data}"
-      sleep 1
+  
+    def build_jobs(count)
+      (1..count).each.collect {|i| YourForkomaticClass::Job.new(i)}
     end
   end
 
-  def build_jobs(count)
-    (1..count).each.collect {|i| YourForkomaticClass::Job.new(i)}
-  end
-end
+  # To just create 20 child processes:
+  Forkomatic.new(20)
 
-# To just create 20 child processes:
-Forkomatic.new(20)
+  # 10 child processes will be maintained, and the loop will will run twice, waiting 1 second between iterations.
+  Forkomatic.new({:max_children => 10, :work_interval => 1, :max_iterations => 2})
 
-# 10 child processes will be maintained, and the loop will will run twice, waiting 1 second between iterations.
-Forkomatic.new({:max_children => 10, :work_interval => 1, :max_iterations => 2})
-
-# The work function will run continuously, adding new child processes as old ones die to maintain a constant 10 processes.
-Forkomatic.new({:max_children => 10, :work_interval => 1})
+  # The work function will run continuously, adding new child processes as old ones die to maintain a constant 10 processes.
+  Forkomatic.new({:max_children => 10, :work_interval => 1})
 
 * Override the Forkomatic::Job initialize function to give your child processes data to work with.
 * Override the Forkomatic::Job work! function to do whatever processing is required.
