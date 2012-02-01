@@ -18,10 +18,10 @@ Jeweler::Tasks.new do |gem|
   gem.homepage = "http://github.com/gdi/forkomatic"
   gem.license = "MIT"
   gem.summary = %Q{Easily run multiple processes continuously in parallel.}
-  gem.description = %Q{Easily create parallel processes to do work.  The process count can be dynamic (between min_children and max_children), can loop continuously (by setting max_iterations => nil), etc}
+  gem.description = %Q{Easily create parallel processes to do work, continuously maintain a number of processes or perform a single iteration, etc.}
   gem.email = "jond@greenviewdata.com"
   gem.authors = ["Jon Durbin"]
-  gem.version = '0.0.1'
+  gem.version = '0.0.2'
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new
